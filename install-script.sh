@@ -63,14 +63,14 @@ fi
 pacman -Syy
 echo "Pacman configured."
 
-# Hardware packages installation
-sudo pacman -S --noconfirm --needed intel-ucode mesa
-
 # Enable sudo
 echo -e "\nEnabling sudo..."
 pacman -S --noconfirm --needed sudo
 sed -i '/^# %wheel ALL=(ALL:ALL) ALL/s/^# //' /etc/sudoers
 echo "Sudo enabled."
+
+# Hardware packages installation
+pacman -S --noconfirm --needed intel-ucode mesa
 
 # Set the locale
 echo -e "\nSetting english UTF-8 locale..."
