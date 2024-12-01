@@ -63,14 +63,56 @@ fi
 pacman -Syy
 echo "Pacman configured."
 
+# Hardware detection and conditional package installation
+echo -e "\nDetecting hardware..."
+# Detect Virtual Machine environment
+if grep "VBOX" /proc/scsi/scsi; then
+    echo "VirtualBox environment detected. Installing VirtualBox Guest Additions..."
+    pacman -S --needed --noconfirm virtualbox-guest-utils
+    systemctl enable vboxservice.service
+    echo "VirtualBox Guest Additions installed."
+elif grep "QEMU" /proc/scsi/scsi; then
+    echo "QEMU environment detected. Installing QEMU Guest Agent..."
+    pacman -S --needed --noconfirm qemu-guest-agent
+    echo "QEMU Guest Agent installed."
+else
+    echo "Physical hardware detected. Checking for specific hardware..."
+    cpu_info=$(grep -m 1 'model name' /proc/cpuinfo)
+    if echo "${cpu_info}" | grep -iq "intel"; then
+        echo "Intel CPU detected. Ensuring intel-ucode is installed..."
+        pacman -S --needed --noconfirm intel-ucode
+    elif echo "${cpu_info}" | grep -iq "amd"; then
+        echo "AMD CPU detected. Installing AMD microcode..."
+        pacman -S --needed --noconfirm amd-ucode
+    else
+        echo "No specific CPU detected. Skipping CPU-specific installations."
+    fi
+
+    IFS=$'\n' # Change the Internal Field Separator to newline to correctly iterate over lines
+    for gpu_info in $(lspci | grep -E "VGA|3D|2D"); do
+        if echo "${gpu_info}" | grep -iq "nvidia"; then
+            echo "NVIDIA GPU detected. Installing drivers..."
+            pacman -S --needed --noconfirm mesa nvidia-open nvidia-utils nvidia-settings
+        elif echo "${gpu_info}" | grep -iq "amd"; then
+            echo "AMD GPU detected. Installing drivers..."
+            pacman -S --needed --noconfirm mesa vulkan-radeon vulkan-tools
+        elif echo "${gpu_info}" | grep -iq "intel"; then
+            echo "Intel GPU detected. Installing drivers..."
+            pacman -S --needed --noconfirm mesa vulkan-intel vulkan-tools
+        else
+            echo "No specific GPU detected. Skipping GPU-specific installations."
+        fi
+    done
+    IFS=' ' # Reset the Internal Field Separator to default
+
+    echo "Hardware detected and set up."
+fi
+
 # Enable sudo
 echo -e "\nEnabling sudo..."
 pacman -S --noconfirm --needed sudo
 sed -i '/^# %wheel ALL=(ALL:ALL) ALL/s/^# //' /etc/sudoers
 echo "Sudo enabled."
-
-# Hardware packages installation
-pacman -S --noconfirm --needed intel-ucode mesa
 
 # Set the locale
 echo -e "\nSetting english UTF-8 locale..."
