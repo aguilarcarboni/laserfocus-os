@@ -17,6 +17,7 @@ read -sp "Enter the password for root: " root_password
 echo -e "\n"
 read -p "Enter the username you want to create: " username
 read -sp "Enter the password for ${username}: " user_password
+echo -e "\n"
 read -p "Enter the host name: " hostname
 echo -e "\n"
 
@@ -155,12 +156,13 @@ echo "Bluetooth configured."
 
 # Install usefull packages
 echo -e "\nInstalling usfull packages..."
-pacman -S --needed --noconfirm base-devel fastfetch
+pacman -S --needed --noconfirm base-devel fastfetch konsole
 echo -e "Packages installed.\n"
 
 # Install KDE Plasma
 echo -e "\nInstalling KDE Plasma..."
 pacman -S --noconfirm --needed plasma-meta
+systemctl enable sddm.service
 
 # Run Fastfetch
 fastfetch
