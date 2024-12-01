@@ -14,6 +14,7 @@ echo -e "You are root. Proceeding with installation...\n"
 
 # Set the root password, username, and hostname
 read -sp "Enter the password for root: " root_password
+echo -e "\n"
 read -p "Enter the username you want to create: " username
 read -sp "Enter the password for ${username}: " user_password
 read -p "Enter the host name: " hostname
@@ -148,7 +149,7 @@ echo "Audio configured."
 
 # Bluetooth configuration
 echo -e "\nConfiguring Bluetooth..."
-pacman -S --noconfirm --needed bluez bluez-utils blueman
+pacman -S --noconfirm --needed bluez bluez-utils
 systemctl enable bluetooth.service
 echo "Bluetooth configured."
 
